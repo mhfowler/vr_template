@@ -3,6 +3,11 @@
  */
 function VrWorld() {
 
+    // constants
+    this.light_origin = 300;
+    this.num_cubes = 1000;
+    this.light_distance = 0;
+
     // vr variables
     this.vr_effect = null;
     this.scene = null;
@@ -25,35 +30,40 @@ function VrWorld() {
         this.init_controls();
     },
 
-    this.init_lights = function() {
-        this.basic_light = new THREE.DirectionalLight(0xffffff, 1);
-        this.basic_light.position.set(1, 1, 1).normalize();
+    this.rLocation = function(x) {
+        return Math.random() * x - x/2.0;
+    }
 
-        this.red_light = new THREE.PointLight( 0xff0000, 1, 0 );
-        this.red_light.position.set( 50, 50, 50 );
+    this.init_lights = function() {
+
+        this.red_light = new THREE.PointLight( 0xff0000, 1, this.light_distance);
+        this.red_light.position.set(this.light_origin, this.light_origin, this.light_origin);
+
+        this.white_light = new THREE.PointLight(0xffffff, 1, this.light_distance );
+        this.white_light.position.set(this.light_origin, this.light_origin, this.light_origin);
     };
 
     this.add_light = function(which) {
-        this.scene.remove(this.basic_light);
+//        this.scene.remove(this.basic_light);
         this.scene.remove(this.red_light);
-       if (which=="basic") {
-           this.scene.add(this.basic_light);
-       }
+        this.scene.remove(this.white_light);
        if (which=="red") {
            this.scene.add(this.red_light);
+       }
+       if (which=="white") {
+           this.scene.add(this.white_light);
        }
     };
 
     this.populate_scene = function() {
 
         this.init_lights();
-        this.add_light("basic");
+        this.add_light("white");
 
         var geometry = new THREE.BoxGeometry(20, 20, 20);
 
         this.cubes = [];
-        var num_cubes = 2000;
-        for (var i = 0; i < num_cubes; i++) {
+        for (var i = 0; i < this.num_cubes; i++) {
 
             var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }));
 
