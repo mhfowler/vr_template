@@ -1,5 +1,5 @@
 /*
-* ∆
+ * ∆
  */
 function VrWorld() {
 
@@ -17,6 +17,10 @@ function VrWorld() {
     this.raycaster = null;
     this.cubes =null;
 
+    this.spot_light_depth = 75;
+    this.spot_light_position = [this.spot_light_depth, this.spot_light_depth, this.spot_light_depth];
+
+
     this.init = function (scene, vr_effect, camera) {
         /* init variables and hook into vr */
         this.scene = scene;
@@ -30,9 +34,9 @@ function VrWorld() {
         this.init_controls();
     },
 
-    this.rLocation = function(x) {
-        return Math.random() * x - x/2.0;
-    }
+        this.rLocation = function(x) {
+            return Math.random() * x - x/2.0;
+        }
 
     this.init_lights = function() {
 
@@ -41,24 +45,45 @@ function VrWorld() {
 
         this.white_light = new THREE.PointLight(0xffffff, 1, this.light_distance );
         this.white_light.position.set(this.light_origin, this.light_origin, this.light_origin);
+
+        this.spotLight = new THREE.SpotLight( 0xffffff, 1, 0);
+        this.spotLight.position.set(
+            this.spot_light_position[0],
+            this.spot_light_position[1],
+            this.spot_light_position[2]
+        );
+
+        this.spotLight.castShadow = true;
+
+        this.spotLight.shadowMapWidth = 1024;
+        this.spotLight.shadowMapHeight = 1024;
+
+        this.spotLight.shadowCameraNear = 500;
+        this.spotLight.shadowCameraFar = 4000;
+        this.spotLight.shadowCameraFov = 30;
+
+        this.scene.add( this.spotLight );
     };
 
     this.add_light = function(which) {
 //        this.scene.remove(this.basic_light);
         this.scene.remove(this.red_light);
         this.scene.remove(this.white_light);
-       if (which=="red") {
-           this.scene.add(this.red_light);
-       }
-       if (which=="white") {
-           this.scene.add(this.white_light);
-       }
+        if (which=="red") {
+            this.scene.add(this.red_light);
+        }
+        if (which=="white") {
+            this.scene.add(this.white_light);
+        }
+        if (which=="spot") {
+            this.scene.add(this.spotLight);
+        }
     };
 
     this.populate_scene = function() {
 
         this.init_lights();
-        this.add_light("white");
+        this.add_light("spot");
 
         var geometry = new THREE.BoxGeometry(20, 20, 20);
 
@@ -92,43 +117,44 @@ function VrWorld() {
         this.raycaster = new THREE.Raycaster();
     },
 
-    this.init_controls = function() {
+        this.init_controls = function() {
 
-        /* add event listeners */
-        document.addEventListener('mousemove', this.onDocumentMouseMove, false);
-    },
+            /* add event listeners */
+            document.addEventListener('mousemove', this.onDocumentMouseMove, false);
+        },
 
-    this.onDocumentMouseMove = function (event) {
+        this.onDocumentMouseMove = function (event) {
 
-        event.preventDefault();
+            event.preventDefault();
 
-        vr_mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        vr_mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+            vr_mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            vr_mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
 
-    },
+        },
 
-    this.animate = function () {
+        this.animate = function () {
 
-        // always start animation loop by doing this
-        vr_controls.update();
+            // always start animation loop by doing this
+            vr_controls.update();
 
-        for (var i = 0; i < this.cubes.length; i++) {
-            var cube = this.cubes[i];
-            cube.position.x += cube.speed[0];
-            cube.position.y += cube.speed[1];
-            cube.position.z += cube.speed[2];
+
+            for (var i = 0; i < this.cubes.length; i++) {
+                var cube = this.cubes[i];
+                cube.position.x += cube.speed[0];
+                cube.position.y += cube.speed[1];
+                cube.position.z += cube.speed[2];
+            }
+
+            var self = this;
+            requestAnimationFrame(function(){self.animate()});
+
+            this.render(this.vr_effect, this.camera);
+        },
+
+        this.render = function () {
+
+            this.camera.updateMatrixWorld();
+            this.vr_effect.render(this.scene, this.camera);
+
         }
-
-        var self = this;
-        requestAnimationFrame(function(){self.animate()});
-
-        this.render(this.vr_effect, this.camera);
-    },
-
-    this.render = function () {
-
-        this.camera.updateMatrixWorld();
-        this.vr_effect.render(this.scene, this.camera);
-
-    }
 };
