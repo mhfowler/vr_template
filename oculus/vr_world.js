@@ -25,16 +25,34 @@ function VrWorld() {
         this.init_controls();
     },
 
+    this.init_lights = function() {
+        this.basic_light = new THREE.DirectionalLight(0xffffff, 1);
+        this.basic_light.position.set(1, 1, 1).normalize();
+
+        this.red_light = new THREE.PointLight( 0xff0000, 1, 0 );
+        this.red_light.position.set( 50, 50, 50 );
+    };
+
+    this.add_light = function(which) {
+        this.scene.remove(this.basic_light);
+        this.scene.remove(this.red_light);
+       if (which=="basic") {
+           this.scene.add(this.basic_light);
+       }
+       if (which=="red") {
+           this.scene.add(this.red_light);
+       }
+    };
+
     this.populate_scene = function() {
 
-        var light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1).normalize();
-        this.scene.add(light);
+        this.init_lights();
+        this.add_light("basic");
 
         var geometry = new THREE.BoxGeometry(20, 20, 20);
 
         this.cubes = [];
-        var num_cubes = 100;
+        var num_cubes = 2000;
         for (var i = 0; i < num_cubes; i++) {
 
             var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }));
