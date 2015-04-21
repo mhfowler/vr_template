@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title> ~ VR ~ </title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            margin: 0px;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body></body>
+
+<!-- three.js 3d library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.js"></script>
+
+<!--
+PhoneVR acquires positional information from phone orientation. is used by VRControls.js
+VRControls.js acquires positional information from connected VR devices and applies the transformations to a three.js camera object.
+ -->
+<script src="js/vr/PhoneVR.js"></script>
+<script src="js/vr/VRControls.js"></script>
+
+<!--
+VREffect.js handles stereo camera setup and rendering.
+-->
+<script src="js/vr/VREffect.js"></script>
+
+<script src="oculus/vr_world.js"></script>
+
+<script>
+
+    // ∆∆∆∆∆∆∆∆∆∆ //
+
+    // world
+    vr_world = new VrWorld(); ///// ∆∆∆∆∆∆∆∆∆∆∆∆∆∆∆∆ CHANGE WORLD HERE
+
+    // Append the canvas element created by the renderer to document body element.
+    vr_renderer = new THREE.WebGLRenderer({ antialias: true });
+    document.body.appendChild(vr_renderer.domElement);
+
+    // mouse
+    vr_mouse = new THREE.Vector2();
+
+    // scene
+    vr_scene = new THREE.Scene();
+
+    // camera
+    vr_camera = new THREE.PerspectiveCamera(110, window.innerWidth / window.innerHeight, 2, 10000);
+    vr_scene.add(vr_camera);
+
+    //apply VR headset positional data to camera.
+    vr_controls = new THREE.VRControls(vr_camera);
+    // controls.enableGamepad(false);
+    // controls.enableWASD(false);
+    // controls.enableArrows(false);
+
+    //Apply VR stereo rendering to renderer
+    vr_effect = new THREE.VREffect(vr_renderer);
+    vr_effect.setSize(window.innerWidth, window.innerHeight);
+
+    /* create, position, and add 3d objects */
+    vr_world.init(vr_scene, vr_effect, vr_camera);
+
+    /* keyboard listener */
+    function vr_onKey(event) {
+        event.preventDefault();
+
+        // control lighting in scene
+        if (event.keyCode == 82) { // r
+            vr_world.add_light("red");
+        }
+        if (event.keyCode == 66) { // b
+            vr_world.add_light("basic");
+        }
+        if (event.keyCode == 73) { // i
+            vr_world.add_light("white");
+        }
+
+        if (event.keyCode == 90) { // z
+            vr_controls.resetSensor(); //zero rotation
+        } else if (event.keyCode == 70 || event.keyCode == 13) { //f or enter
+            vr_effect.setFullScreen(true);
+        }
+    };
+
+    /* window resize */
+    function vr_onWindowResize() {
+        vr_camera.aspect = window.innerWidth / window.innerHeight;
+        vr_camera.updateProjectionMatrix();
+        vr_effect.setSize(window.innerWidth, window.innerHeight);
+    };
+
+    // * initialize event listeners
+    window.addEventListener("keydown", vr_onKey, true);
+    window.addEventListener('resize', vr_onWindowResize, false);
+
+    // start animation loop
+    vr_world.animate()
+
+</script>
+</html>
